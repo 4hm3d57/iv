@@ -2,41 +2,34 @@
 #define FILE_MANAGER_H
 
 
-
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <windows.h>
+#include "../raylib/raylib.h"
 
 
-#define MAX_SIZE 1024
-#define MAX_PATHS 256
-#define EXT_PATH 8
+    
+typedef struct {
+    Texture2D texture;
+    int width;
+    int height;
+    const char* path;
+} ImageObject;
 
 
 typedef struct {
-    char path[MAX_PATHS];
-    char filename[MAX_PATHS];
-    char extension[EXT_PATH];
-    bool isImage;
-    size_t image_size;
-} FileEntry;
-
-
-typedef struct {
-    FileEntry file[MAX_SIZE];
-    int file_count;
-    int curr_index;
-    char current_directory[MAX_PATHS];
-    bool directory_loaded;
-} FileManager;
+    ImageObject *img;
+    int current;
+    int count;
+} ImageManager;
 
     
-void InitFileManager(FileManager *fm, const char* start_path);
-    
+ImageManager *CreateImageManager(int count);
+void LoadImageToManager(ImageManager *manager, int index, const char* path);
+ImageObject *GetCurrImage(ImageManager* manager);
 
-bool load_dir(FileManager *fm, const char* path);
+
+
+void next_image(ImageManager *manager);
+void prev_image(ImageManager *manager);
+void destroy_images(ImageManager *manager);
 
 
 #endif
-

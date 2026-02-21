@@ -1,39 +1,59 @@
 #include "../include/headers/file_manager.h"
-#include <winnt.h>
+#include <stdlib.h>
 
 
+ImageManager *CreateImageManager(int count) {
+    ImageManager *manager = malloc(sizeof(ImageManager));
+    manager->count = count;
+    manager->current = 0;
+    manager->img = malloc(sizeof(ImageObject) * count);
 
-void InitFileManager(FileManager *fm, const char* start_path) {
-    fm->file_count = 0;
-    fm->curr_index = 0;
-    fm->directory_loaded = false;
+
+    return manager;
+}
 
 
-    strcpy(fm->current_directory, start_path);
+void LoadImageToManager(ImageManager *manager, int index, const char* path) {
+    Image img = LoadImage(path);
 
-    printf("File manager initialized with directory: %s\n", start_path);
+    manager->img[index].texture = LoadTextureFromImage(img);
+    manager->img[index].width = img.width;
+    manager->img[index].height = img.height;
+    manager->img[index].path = path;
+
+    UnloadImage(img);
 }
 
 
 
-bool load_dir(FileManager *fm, const char* path) {
-    WIN32_FIND_DATA findFileData;
-    HANDLE hFind;
-    char search_path[MAX_PATHS + 2];
-    
-    snprintf(search_path, sizeof(search_path), "%s\\", path);
-   
+ImageObject *GetCurrImage(ImageManager *manager) {
+    return &manager->img[manager->current];
+}
 
-    hFind = FindFirstFile(search_path, &findFileData);
-    if(hFind == INVALID_HANDLE_VALUE) {
-        printf("Failed to open directory, error code: %lu\n", GetLastError());
-        return false;
+
+
+
+void next_image(ImageManager *manager) {
+    manager->current++;
+    if(manager->current >= manager->count)
+        manager->current = 0;
+}
+
+
+void prev_image(ImageManager *manager) {
+    manager->current--;
+    if(manager->current < 0) 
+        manager->current = manager->count - 1;
+}
+
+
+
+void destroy_images(ImageManager *manager) {
+    for(int i=0; i<manager->count; i++) {
+        UnloadTexture(manager->img[i].texture);
     }
 
-
-    do {
-        //TODO: Process each file 
-    } while(FindNextFile(hFind, &findFileData) != 0);
-
-    return true;
+    free(manager->img);
+    free(manager);
 }
+
